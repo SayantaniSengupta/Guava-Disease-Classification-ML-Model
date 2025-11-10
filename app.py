@@ -1,5 +1,6 @@
 import streamlit as st
 import tensorflow as tf
+import os
 import numpy as np
 from PIL import Image
 
@@ -22,8 +23,15 @@ if uploaded_file is not None:
     img_array = np.expand_dims(img_array, axis=0)
 
     # --- Load model ---
-    model = tf.keras.models.load_model("final_model.keras")
+    def get_latest_model(results_dir="results"):
+    model_files = [f for f in os.listdir(results_dir) if f.endswith(".keras")]
+    if not model_files:
+        raise FileNotFoundError("No .keras model files found in results/")
+    latest = max(model_files, key=lambda x: os.path.getmtime(os.path.join(results_dir, x)))
+    return os.path.join(results_dir, latest)
 
+model_path = get_latest_model()
+model = tf.keras.models.load_model(model_path, compile=False)
     # --- Predict ---
     class_names = [
         "anthracnose_fruit",
