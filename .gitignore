@@ -6,8 +6,8 @@ Guava Fruit data/
 *.png
 
 # Ignore large or temporary folders
-logs/
-results/
+# logs/
+# results/
 __pycache__/
 .ipynb_checkpoints/
 .DS_Store
