@@ -46,9 +46,10 @@ if uploaded_file is not None:
     st.write("🔍 Classifying... Please wait...")
 
     # --- Preprocess image ---
-    img = image.resize((160, 160))
-    img_array = np.array(img) / 255.0
+    img_array = np.array(img).astype("float32")
+    img_array = (img_array / 127.5) - 1  # scale to [-1, 1]
     img_array = np.expand_dims(img_array, axis=0)
+
 
     # --- Prediction ---
     preds = model.predict(img_array)
