@@ -23,12 +23,18 @@ if uploaded_file is not None:
     img_array = np.expand_dims(img_array, axis=0)
 
     # --- Load model ---
-    def get_latest_model(results_dir="results"):
+   
+
+def get_latest_model(results_dir="results"):
     model_files = [f for f in os.listdir(results_dir) if f.endswith(".keras")]
     if not model_files:
         raise FileNotFoundError("No .keras model files found in results/")
     latest = max(model_files, key=lambda x: os.path.getmtime(os.path.join(results_dir, x)))
     return os.path.join(results_dir, latest)
+
+model_path = get_latest_model()
+model = tf.keras.models.load_model(model_path, compile=False)
+
 
 model_path = get_latest_model()
 model = tf.keras.models.load_model(model_path, compile=False)
