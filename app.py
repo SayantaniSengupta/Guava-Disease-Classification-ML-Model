@@ -1,14 +1,14 @@
 import streamlit as st
 import tensorflow as tf
-import os
 import numpy as np
+import os
 from PIL import Image
 
-# --- App Title & Description ---
+# --- App Title ---
 st.title("🍃 Guava Disease Classification")
 st.write("Upload a guava fruit or leaf image to classify its disease.")
 
-# --- Function to load the latest model from 'results/' ---
+# --- Function to load the latest trained model ---
 @st.cache_resource
 def get_latest_model(results_dir="results"):
     model_files = [f for f in os.listdir(results_dir) if f.endswith(".keras")]
@@ -40,21 +40,33 @@ class_names = [
 uploaded_file = st.file_uploader("📸 Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    # --- Display uploaded image ---
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_column_width=True)
-    st.write("🔍 Classifying... Please wait...")
+    try:
+        # --- Load and display uploaded image ---
+        image = Image.open(uploaded_file).convert("RGB")
+        st.image(image, caption="Uploaded Image", use_column_width=True)
+        st.write("🔍 Classifying... Please wait...")
 
-    # --- Preprocess image ---
-    img_array = np.array(img).astype("float32")
-    img_array = (img_array / 127.5) - 1  # scale to [-1, 1]
-    img_array = np.expand_dims(img_array, axis=0)
+        # --- Preprocess image (MobileNetV2 expects [-1,1]) ---
+        img = image.resize((160, 160))
+        img_array = np.array(img).astype("float32")
+        img_array = (img_array / 127.5) - 1.0  # normalize to [-1, 1]
+        img_array = np.expand_dims(img_array, axis=0)
 
+        # --- Predict ---
+        preds = model.predict(img_array)
+        pred_class = class_names[np.argmax(preds)]
+        confidence = np.max(preds) * 100
 
-    # --- Prediction ---
-    preds = model.predict(img_array)
-    pred_class = class_names[np.argmax(preds)]
-    confidence = np.max(preds) * 100
+        # --- Display Result ---
+        st.success(f"✅ Prediction: **{pred_class}** ({confidence:.2f}% confidence)")
 
-    # --- Display result ---
-    st.success(f"✅ Prediction: **{pred_class}** ({confidence:.2f}% confidence)")
+        # --- Show probabilities for all classes (debugging helper) ---
+        with st.expander("🔬 View detailed class probabilities"):
+            for name, prob in zip(class_names, preds[0]):
+                st.write(f"{name}: {prob:.4f}")
+
+    except Exception as e:
+        st.error(f"⚠️ Error processing the image: {e}")
+
+else:
+    st.info("👆 Please upload an image file to begin classification.")
