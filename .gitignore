@@ -1,0 +1,17 @@
+# Ignore datasets, images, and augmentations
+Guava Fruit data/
+*/augmented_tf/
+*/augmented/
+*.jpg
+*.png
+
+# Ignore large or temporary folders
+logs/
+results/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+
+# System cache
+Thumbs.db
+
